@@ -1,0 +1,59 @@
+{
+  "name": "@sv-cd/core",
+  "version": "0.0.1",
+  "description": "This a sv's core. Sv is a group of plugins and utilities that you help when work in a proyect of frontend. Loads your data before the build and compiles your code(javascript, css, .ejs(template)). Using Static site generation concepts, and others strategies.",
+  "bin": {
+    "sv": "build/src/index.js"
+  },
+  "main": "build/src/index.js",
+  "scripts": {
+    "tsc:dev": "tsc -w",
+    "tsc:build": "tsc",
+    "postinstall": "patch-package",
+    "prepublishOnly": "npm run tsc:build && npm run build --worskspaces"
+  },
+  "workspaces": [
+    "./packages/*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-doctors-team/serVer.git"
+  },
+  "keywords": [
+    "server",
+    "ssg",
+    "static site generator",
+    "server-private",
+    "sv"
+  ],
+  "author": "alejooroncoy <adoa2705@gmail.com>",
+  "license": "Mozilla Public License 2.0",
+  "bugs": {
+    "url": "https://github.com/code-doctors-team/serVer/issues"
+  },
+  "homepage": "https://github.com/code-doctors-team/serVer#readme",
+  "devDependencies": {
+    "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@minify-html/js": "^0.8.0",
+    "@parcel/css": "^1.3.2",
+    "@types/ejs": "^3.1.0",
+    "@types/express": "^4.17.13",
+    "@types/node": "^15.14.9",
+    "boxen": "^5.1.2",
+    "chalk": "4.1.2",
+    "commander": "^8.3.0",
+    "compress-images": "^2.0.4",
+    "ejs": "^3.1.6",
+    "esbuild": "^0.14.9",
+    "fast-glob": "^3.2.7",
+    "gifsicle": "^5.2.1",
+    "open": "^8.4.0",
+    "patch-package": "^6.4.7",
+    "pngquant-bin": "^6.0.1",
+    "require-from-string": "^2.0.2",
+    "resolve": "^1.21.0",
+    "serve-static": "^1.14.2"
+  }
+}

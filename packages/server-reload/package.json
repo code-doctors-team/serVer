@@ -1,0 +1,25 @@
+{
+  "name": "@sv-cd/server-reload",
+  "version": "0.0.1",
+  "description": "Use @sv-cd/server of server and add features. Used in @sv-cd/core",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify && npm run build:clients",
+    "build:clients": "esbuild ./src/clients/index.js --outfile=build/clients.js --bundle --target=chrome58,firefox57,safari11 --minify"
+  },
+  "keywords": [],
+  "author": "alejo <adoa2705@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "chokidar": "^3.5.1",
+    "internet-available": "^1.0.0",
+    "ip": "^1.1.5",
+    "public-ip": "^4.0.3",
+    "serve-static": "^1.14.1",
+    "tcp-port-used": "^1.0.2",
+    "ws": "^8.4.2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.11.20"
+  }
+}
