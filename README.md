@@ -86,7 +86,7 @@ Use a structure similar to this.
       ┣ 📂assets
       ┃ ┣ manifest.json
       ┃ ┗ 📜logo.jpg
-      ┣ 📂components(next version)
+      ┣ 📂components(next version available)
       ┃ ┗ 📜header.ejs
       ┣ 📂styles
       ┃ ┣ 📜styles.css
