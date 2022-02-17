@@ -4,6 +4,8 @@
 - Make in typescript! :D
 - Use ejs(future more templates) templates for pages and components!
 
+- `Description:` serVer is a group of plugins and utilities that you help when work in a proyect of frontend. Loads your data before the build and compiles your code(javascript, css, .ejs(template)). Using Static site generation concepts, and others strategies."
+
 ### Table of Contents
 
 - [How get?][1]
