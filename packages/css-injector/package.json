@@ -6,12 +6,16 @@
   "scripts": {
     "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify && npm run build:clients",
     "build:clients": "esbuild ./src/clients/index.js --outfile=build/clients.js --bundle --target=chrome58,firefox57,safari11 --minify",
-    "dev": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --watch"
+    "dev": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "alejo <adoa2705@gmail.com>",
   "license": "ISC",
   "devDependencies": {
     "esbuild": "^0.14.11"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

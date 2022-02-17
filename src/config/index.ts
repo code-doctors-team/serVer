@@ -40,7 +40,7 @@ const name = () => {
   else instance = packageJson.name;
   return {
     getName: () => {
-      if(instance === '@sv/core') return 'serVer';
+      if(instance === '@sv-cd/core') return 'serVer';
       return instance;
     },
   }

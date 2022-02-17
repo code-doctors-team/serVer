@@ -4,7 +4,8 @@
   "description": "Variant of express used in @sv-cd/core",
   "main": "build/index.js",
   "scripts": {
-    "build": "esbuild ./src/index.js --minify --outfile=build/index.js --target=node12.0.1 --bundle --platform=node"
+    "build": "esbuild ./src/index.js --minify --outfile=build/index.js --target=node12.0.1 --bundle --platform=node",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "alejo <adoa2705@gmail.com>",
@@ -16,5 +17,8 @@
     "finalhandler": "^1.1.2",
     "path-to-regexp": "^6.2.0",
     "send": "^0.17.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

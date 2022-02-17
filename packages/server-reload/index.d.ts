@@ -1,4 +1,4 @@
-import Spinner from "@sv/cli-loader";
+import Spinner from "@sv-cd/cli-loader";
 import { watch } from "chokidar";
 import EventEmitter from "events";
 

@@ -4,7 +4,8 @@
   "description": "Cli Loader of @sv/core",
   "main": "build/index.js",
   "scripts": {
-    "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify"
+    "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "alejo <adoa2705@gmail.com>",
@@ -15,5 +16,8 @@
   },
   "devDependencies": {
     "esbuild": "^0.12.15"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

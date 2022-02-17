@@ -6,7 +6,8 @@
   "scripts": {
     "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify && npm run build:clients",
     "build:clients": "esbuild ./src/clients/index.js --outfile=build/clients.js --bundle --target=chrome58,firefox57,safari11 --minify --define:process.env.DEV=false --keep-names",
-    "dev": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --watch"
+    "dev": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --watch",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [],
   "author": "alejo <adoa2705@gmail.com>",
@@ -18,5 +19,8 @@
     "nanoid": "^3.1.30",
     "node-fetch": "^3.1.0",
     "node-html-parser": "^5.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

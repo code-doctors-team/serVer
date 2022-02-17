@@ -24,7 +24,7 @@
 Run:
 
 ```sh
-  npm install @sv-core/core -D
+  npm install @sv-cd/core -D
 ```
 
 ## Sv-cli
@@ -202,7 +202,7 @@ $ sv build -h
   Starting build of your project for production
 
   Options:
-    --root <root>                         Select root of pwd (default: ".")
+    --root <root>             Select root of pwd (default: ".")
     --dist <dist_proyect>     Is a place where will bundle of your project (default: "public")
     --pages <pages_root>      Select root of pages (default: "./pages")
     --styles <styles_root>    Select root of styles(css) (default: "./src/styles")
