@@ -4,7 +4,7 @@
 - Make in typescript! :D
 - Use ejs(future more templates) templates for pages and components!
 
-- `Description:` serVer is a group of plugins and utilities that you help when work in a proyect of frontend. Loads your data before the build and compiles your code(javascript, css, .ejs(template)). Using Static site generation concepts, and others strategies."
+- `Description:` serVer is a group of plugins and utilities that you help when work in a proyect of frontend. Loads your data before the build and compiles your code(javascript, css, .ejs(template)). Using Static site generation concepts, and others strategies.
 
 ### Table of Contents
 
@@ -86,7 +86,7 @@ Use a structure similar to this.
       ┣ 📂assets
       ┃ ┣ manifest.json
       ┃ ┗ 📜logo.jpg
-      ┣ 📂components(next version available)
+      ┣ 📂components
       ┃ ┗ 📜header.ejs
       ┣ 📂styles
       ┃ ┣ 📜styles.css
@@ -129,7 +129,7 @@ These routes are generated when you create a subfolder within a folder, this in 
 
 ### File config.data.js
 
-This is a file where you can add variables to your ejs files.
+This is a file where you can add variables to your ejs files. With dynamic routes, you can create dynamic pages, start with `:id` and file is `[id]`.
 
 Create a file named `config.data.js`
 
@@ -141,6 +141,9 @@ Accept **module/exports Ecmascript 6+** and **CommonJS**
 
 ```typescript
   exports.[page] = {
+    [':[dinamycPage]']: {
+      [variable: (string | number)]: // Function, string, object, any
+    },
     ['/[subPage]']: {
       ['/[subPage]']: {
         // ...
@@ -150,7 +153,7 @@ Accept **module/exports Ecmascript 6+** and **CommonJS**
     }
     [variable: (string | number)]: // Function, string, object, any
   }
-  export.["notFound"] = {
+  exports.["notFound"] = {
     [variable: (string | number)]: // Function, string, object, any
   } -> `Data for 404 page`
 ```
@@ -159,6 +162,9 @@ Accept **module/exports Ecmascript 6+** and **CommonJS**
 
 ```typescript
   export const [page] = {
+    [':[dinamycPage]']: {
+      [variable: (string | number)]: // Function, string, object, any
+    },
     ['/[subPage]']: {
       ['/[subPage]']: {
         // ...
@@ -180,12 +186,39 @@ Accept **module/exports Ecmascript 6+** and **CommonJS**
 export const index = {
   title: "First Proyect with serVer",
 };
+export const posts = {
+  [":post"]: () => {
+    const posts = getPosts();
+    return posts.map((post) => ({
+      name: post.name,
+      data: post.data,
+    }));
+  },
+};
 
 // With commonJs
 exports.index = {
   title: "First Proyect with serVer",
 };
+exports.posts = {
+  [":post"]: () => {
+    const posts = getPosts();
+    return posts.map((post) => ({
+      name: post.name,
+      data: post.data,
+    }));
+  },
+};
 ```
+
+In files
+📦src
+┣ 📂pages
+┃ ┣ 📂dashboard
+┃ ┃ ┗ 📜settings.ejs
+┃ ┣ 📂posts
+┃ ┃ ┗ 📜[post].ejs
+┃ ┣ 📜index.ejs
 
 ## How to build my project for production?
 

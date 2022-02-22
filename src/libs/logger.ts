@@ -8,7 +8,7 @@ const logger = {
       console.log(`${prefixText.value} ${chalk(message)}`);
     })
   },
-  logString: (...args) => {
+  logString: (...args: any[]) => {
     const { prefixText } = spinner();
     console.log(`${prefixText.value} ${chalk(...args)}`);
   },
@@ -18,7 +18,7 @@ const logger = {
       console.log(chalk`${prefixText.value} {bgHex("#FFFB26") {bold {hex("#0000") WARNING}}} ${message}`);
     })
   },
-  warnString: (...args) => {
+  warnString: (...args: any[]) => {
     const { prefixText } = spinner();
     console.log(chalk`${prefixText.value} {bgHex("#FFFB26") {bold {hex("#0000") WARNING}}} ${chalk(...args)}`);
   },
@@ -28,7 +28,7 @@ const logger = {
       console.log(chalk`{red {bold {italic ${prefixText.message}}}} ${message}`);
     })
   },
-  errorString: (...args) => {
+  errorString: (...args: any[]) => {
     const { prefixText } = spinner();
     console.log(chalk`{red {bold {italic ${prefixText.message}}}} ${chalk(...args)}`);
   },

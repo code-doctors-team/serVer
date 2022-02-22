@@ -1,7 +1,9 @@
 import * as glob from 'fast-glob';
+import { existsSync } from 'fs';
 import path, { ParsedPath } from 'path';
 import { Transform } from 'stream';
 import { configType } from '../config';
+import { handleError } from '../error/handle';
 
 type Route = {
   url: string,
@@ -24,6 +26,15 @@ export default class Router {
   #loadedRoutes = false;
 
   public get = (url: string): Route | null => this.routes.get(url) || null;
+
+  public getRoot = (root: string): Route | null => {
+    let routeRoot = null;
+    this.routes.forEach(value => {
+      if(routeRoot) return;
+      if(value.root === root) routeRoot = value;
+    })
+    return routeRoot;
+  };
 
   public has = (url: string, createUrl: boolean = true): boolean => this.routes.has(createUrl ? Router.createUrl(url) : url);
 
@@ -88,26 +99,56 @@ export default class Router {
     return url;
   }
   
+  public loadTemplateRoute = (url: string, template: string, parentUrl: string): Route => {
+    const [parent, type]: [Route, string] = [this.get(parentUrl) || this.getRoot(parentUrl), this.get(parentUrl) ? 'page' : 'root'];
+    if(parent) {
+      if(type === 'root') {
+        const absolutePathRoot: string = path.resolve(this.config.pagesRoot, parent.root.slice(1));
+        const urlTemplate: string = Router.createUrl(path.join(parent.root.slice(1), url));
+        const id: string = template.slice(1);
+        const templateFile: string = path.resolve(absolutePathRoot, `[${id}]`).concat(this.config.extname);
+        const route: Route = {
+          url: urlTemplate,
+          absolutePath: templateFile,
+          root: parent.url,
+        };
+        this.routes.set(urlTemplate, route);
+        return route;
+      }
+      const urlTemplate: string = Router.createUrl(path.join(parent.url.slice(1), url));
+      if(path.extname(parent.absolutePath) === this.config.extname) {
+        handleError(Error(`If you use sv templates, ${parent.relativePath} must be a folder and have the \`${template.concat(this.config.extname)}\` file inside it.`), 'pages');
+        return;
+      }
+      const id = template.slice(1);
+      const templateFile: string = path.resolve(parent.absolutePath, `[${id}]`).concat(this.config.extname);
+      const route: Route = {
+        url: urlTemplate,
+        absolutePath: templateFile,
+        root: parent.url,
+      };
+      this.routes.set(urlTemplate, route);
+      return route;
+    }
+    return null;
+  }
   public loadRoute = (file: string): Route => {
     const { pagesRoot } = this.config;
     const fileObject: ParsedPath = path.parse(file);
     Reflect.set(fileObject, 'root' , pagesRoot.concat('/'));
     const url = Router.createUrl(fileObject);
+    
     if(this.config.type === 'dev') {
       this.config.spinner.text = `Loading routes -- Load ${fileObject.name}.ejs --> ${url}`;
     }
-    this.routes.set(url, {
-      url,
-      absolutePath: fileObject.dir ? path.join(pagesRoot.concat('/'), path.format(fileObject)) : path.format(fileObject),
-      relativePath: file,
-      root: Router.createUrl(fileObject.dir),
-    })
-    return {
+    const route: Route = {
       url,
       absolutePath: fileObject.dir ? path.join(pagesRoot.concat('/'), path.format(fileObject)) : path.format(fileObject),
       relativePath: file,
       root: Router.createUrl(fileObject.dir),
     };
+    this.routes.set(url, route)
+    return route;
   }
   
   public loadRoutes = (callback: (this: Router, routes: Map<string, Route>) => void): void => {

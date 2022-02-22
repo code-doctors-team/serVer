@@ -1,15 +1,43 @@
-import { isAbsolute, resolve } from 'path';
+import { resolve } from 'path';
 import { NextFunction, Response } from 'express';
 import config from '../config';
 import Router from '../router';
-import Data from '../data';
-import { snippetSv } from '../libs/dev';
+import Data, { DataPage } from '../data';
+import { snippetSv, watchingPages } from '../libs/dev';
 import middlewareCss from './css.mid';
 import middlewareAssets from './assets.mid';
 import middlewareJs from './js.mid';
 import addRoute from './addRoutes.mid';
 import errorEjsMiddleware from './errorEjs.mid';
 import error404 from './error404.mid';
+
+const getTemplateAndGenerateEngine = () => {
+  const engines = {
+    ejs(path: string, data: DataPage, cb: (err: Error, result?: string) => void) {
+      import('ejs')
+      .then(({ renderFile }) => {
+        renderFile(path, data, {
+          cache: data.cache,
+          delimiter: data.delimiter,
+          filename: data.relativePath ?? data.absolutePath,
+          includer(_originalPath: string, parsedPath: string) {
+            if(!watchingPages._components) watchingPages._components = new Set();
+            if(watchingPages._components.has(parsedPath)) return {
+              filename: parsedPath,
+            };
+            watchingPages.add(parsedPath);
+            watchingPages._components.add(parsedPath);
+            return {
+              filename: parsedPath,
+            }
+          }
+        }, cb);
+      })
+    }
+  };
+  const engine = engines[config.engine];
+  return [config.engine, engine]  
+};
 
 const addScript = (html: string): string => {
   let newHtml: string = html;
@@ -59,21 +87,17 @@ export default function addMiddlewaresAndRoutes(sv: any, { version }:{ version: 
   sv.use((req: Request, res: Response & { __render: (...args: any[]) => void }, next: NextFunction) => {
     res.__render = res.render;
     res.render = (...args: [string, object]) => {
-      const [pth] = args;
-      if(isAbsolute(pth)) {
-        return res.__render(...args)
-      };
       res.__render(...args, async (err: Error, htmlParam: string) => {
           if(err) return next(err);
           let html = htmlParam;
           if(!html.length) {
             const EmptyTemplatePath: string = resolve(__dirname, '../templates/_empty_template.ejs');
-            const { render } = await import('ejs');
             const { Transform } = await import('stream');
             const { createReadStream } = await import('fs');  
+            const { render } = await import('ejs');  
             const templateStream = createReadStream(EmptyTemplatePath, 'utf-8');
             const TransformTemplateContent = new Transform({
-              write(chunk, encoding, cb) {
+              write(chunk, _encoding, cb) {
                 const EmptyTemplateContent = render(chunk.toString(), {
                   url: req.url, 
                   version,
@@ -92,6 +116,7 @@ export default function addMiddlewaresAndRoutes(sv: any, { version }:{ version: 
     next();
   });
   sv.set('view root', config.pagesRoot);
+  sv.engine(...getTemplateAndGenerateEngine());
   sv.set('view engine', 'ejs')
   addRoutes(sv);
 }

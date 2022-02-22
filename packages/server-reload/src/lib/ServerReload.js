@@ -71,7 +71,7 @@ export default class ServerReload {
       url: `http://localhost:${port}`,
       urlExternal: isOnline ? `http://${ip}:${port}` : '',
       snippet: `<script sv="${version}">
-        const getUrl = () => [location.protocol, '//', location.host, location.pathname, 'sv@${version}'].join('');
+        const getUrl = () => [location.protocol, '//', location.host, '/', 'sv@${version}'].join('');
         const script = document.createElement('script');
         // script.setAttribute('async', '');
         script.setAttribute('src', getUrl());

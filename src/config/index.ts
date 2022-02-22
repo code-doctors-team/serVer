@@ -25,12 +25,15 @@ export type configType = {
   data: null | Data,
   ready: boolean,
   events: EventEmitter,
+  engine: string,
+  extname: string,
   '#pagesRoot': string,
   '#dist': string,
   '#cssRoot': string,
   '#assetsRoot': string,
   '#jsRoot': string,
   '#root': string,
+  '#extname': string,
 }
 
 const name = () => {
@@ -57,8 +60,17 @@ const defaultConfig: configType = {
   '#jsRoot': './src/scripts', 
   '#dist': './build',
   '#root': '.',
+  '#extname': '',
   type: 'dev',
   events: new EventEmitter(),
+  engine: 'ejs',
+  get extname() {
+    if(!this['#extname']) return `.${this.engine}`;
+    return this['#extanme'];
+  },
+  set extname(newExtName) {
+    this['#extname'] = newExtName;
+  },
   get root() {
     if(this['#root'] === '.') return process.cwd();
     return path.resolve(process.cwd(), this['#root']);

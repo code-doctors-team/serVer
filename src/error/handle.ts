@@ -18,6 +18,7 @@ interface HandlesError {
   js: () => void;
   pages: () => void;
   assets: () => void;
+  default: () => void;
 };
 
 function onReady(first: boolean) {
@@ -62,7 +63,6 @@ export const handleError = (err: ErrorParam, type?: string) => {
     js() {
       let messageError: string = err.message;
       const { errors } = err;
-      // console.log(err)
       if(!errors || !errors.length) {
         if(config.ready) {
           logger.error(messageError);
@@ -84,15 +84,12 @@ export const handleError = (err: ErrorParam, type?: string) => {
       }) 
     },
     pages() {
-      let messageError = err.message;
-      if(config.ready) {
-        logger.error(messageError);
-      } else {
-        this.waitingReady.add(err);
-        config.spinner.setError(messageError);
-      }
+      this.default();
     },
     assets() {
+      this.default();
+    },
+    default() {
       let messageError = err.message;
       if(config.ready) {
         logger.error(messageError);

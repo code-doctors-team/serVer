@@ -6,7 +6,7 @@ export default function addRoute(req: Request, res: Response, next: NextFunction
   if(page) {
     const dataUrl = config.data.get(page.url);
     const parent = page.root !== page.url && page.root !== '/' && !dataUrl && config.data.get(page.root) || {};
-    res.render(page.relativePath, Object.assign(dataUrl || {}, parent));
+    res.render(page.relativePath ?? page.absolutePath, Object.assign(dataUrl || {}, parent));
     return;
   }
   next();

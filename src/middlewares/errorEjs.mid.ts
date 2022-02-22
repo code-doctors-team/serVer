@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { createReadStream, ReadStream } from 'fs';
 import path from 'path';
 import { Transform } from 'stream';
+import { handleError } from '../error/handle';
 import { snippetSv } from '../libs/dev';
 
 const getStack = (error: Error): string => {
@@ -10,15 +11,17 @@ const getStack = (error: Error): string => {
   let init: string = '';
   const ErrorLine: string = stack
     .split('\n')
-    .find(e => {
-      if(e.startsWith('SyntaxError')) {
+    .find((Line: string) => {
+      if(Line.startsWith('SyntaxError')) {
         init = 'SyntaxError';
-      };
-      if(e.startsWith('ReferenceError')) {
+      } else if(Line.startsWith('ReferenceError')) {
         init = 'ReferenceError';
+      } else if(Line.startsWith('Error')) {
+        init = 'Error';
       }
-      return e.startsWith('SyntaxError') || e.startsWith('ReferenceError');
+      return Line.startsWith('SyntaxError') || Line.startsWith('ReferenceError') || Line.startsWith('Error');
     });
+  if(!ErrorLine) return stack;
   const ErrorLineInitBr: string = ErrorLine.replace(init, `<b>${init}`);
   const ErrorLineFinishBr: string = ErrorLineInitBr
                                       .slice(0, -1)
@@ -27,7 +30,8 @@ const getStack = (error: Error): string => {
   return resolveStack;
 };
 
-export default function errorEjsMiddleware(err: Error, req: Request, res: Response, next: NextFunction) {
+export default function errorEjsMiddleware(err: Error, _req: Request, res: Response, _next: NextFunction) {
+  handleError(err);
   const streamTemplate: ReadStream = createReadStream(path.resolve(__dirname, '../templates/error_ejs.ejs'));
   const transformTemplate: Transform = new Transform({
     write(chunk, _encoding, cb) {

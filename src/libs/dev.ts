@@ -17,6 +17,7 @@ type OptionsDev = {
 
 export let snippetSv = '';
 export let urlSv = '';
+export let watchingPages = null;
 
 const watchFiles = (sv: any): void => {
   const [watchedPages, watchedCss, watchedJs] = [sv.watch('./**/*.ejs', {
@@ -26,6 +27,7 @@ const watchFiles = (sv: any): void => {
   }), sv.watch('./**/*.js', {
     cwd: config.jsRoot,
   })]
+  watchingPages = watchedPages;
   watchedPages
   .on('change', (path: string): void => {
     sv.reload(path, htmlInjector.name, {

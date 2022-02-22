@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import htmlInjector from '@sv-cd/html-injector';
 import internal, { Writable } from "stream";
 import * as glob from "fast-glob";
@@ -9,6 +9,7 @@ import Router from '../router';
 import spinner from '../libs/spinner';
 import config from '../config';
 import { handleError } from '../error/handle';
+import logger from '../libs/logger';
 
 export type DataPage =  {
   [key: string]: any | Promise<any>
@@ -34,13 +35,14 @@ const addDataFuncs = async (data: DataPage) => {
   const newData: Promise<{
     name: string,
     data: DataPage,
-  }>[] = Object.keys(data).map(async (key_data: string) => {
-    const value = data[key_data];
-    return {
-      name: key_data,
-      data: await (isFunc(value) ? value() : value),
-    };
-  });
+  }>[] = Object.entries(data)
+          .map(async ([key_data, value]: [string, any]) => ({
+            name: key_data,
+            data: await (isFunc(value) ? value() : (
+              typeof value === 'object' ? (
+              Array.isArray(value) ? value : addDataFuncs(value)
+            ): value)),
+          }));
   const NewData = await Promise.all(newData);
   NewData.forEach(({ name, data: data_new }) => Reflect.set(all, name, data_new));
   return all;
@@ -48,7 +50,7 @@ const addDataFuncs = async (data: DataPage) => {
 
 const filterPaths = (object: Object): Object => {
   const newObj: Object = {};
-  const newKeys: string[] = Object.keys(object).filter((key: string) => !key.startsWith('/'));
+  const newKeys: string[] = Object.keys(object).filter((key: string) => !key.startsWith('/') && !key.startsWith(':'));
   newKeys.forEach(key => Reflect.set(newObj, key, object[key]));
   return newObj;
 };
@@ -67,24 +69,6 @@ export default class Data {
     this.sv = sv;
     this.stringToJsAndAddData = this.stringToJsAndAddData.bind(this);
   }
-
-  #stringToObject = (cb: (data: DataPage) => void) => {
-    const pathConfigStream: NodeJS.ReadableStream = glob.stream(this.defaultPath, {
-      cwd: process.cwd(),
-    });
-    pathConfigStream.pipe(this.WritablePathConfigStream((content: string) => {
-      const contentParsed = requireFromString(content);
-      cb(contentParsed);
-    }))
-  }
-
-  public load = (url: string): Promise<DataPage|void> => new Promise(res => {
-    this.#stringToObject((data) => {
-      const urlResolve = url === '/404' ? 'notFound' : Router.createUrl(url);  
-      const dataPage = data[urlResolve];
-      return res(dataPage || null)
-    })
-  });
   
   public get = (url: string): DataPage | null => this.data.get(url) || null;
 
@@ -97,11 +81,69 @@ export default class Data {
       let index: number = 0;
       keys.forEach(async (key: string) => {
         let subValue: DataPage = Reflect.get(value, key);
-        subValue = await addDataFuncs(value);
-        if(key.startsWith('/')) {
-          const subParsedKey: string = Router.createUrl(join(parsedKey, key.slice(1)));
-          await this.#addData(Object.assign(objectFiltered, subValue), subParsedKey);
-        };
+        if(key.startsWith(':')) {
+          subValue = await addDataFuncs({ value: subValue });
+          const { value: pageDinamyc } = subValue;
+          const pageDinamycPromise: Promise<void> = new Promise(res => {
+            let index_page_dinamyc = 0;
+            if(Array.isArray(pageDinamyc)) {
+              pageDinamyc.forEach(async (val: string | [string, any] | {
+                name: string,
+                data: any,
+              }) => {
+                switch(typeof val) {
+                  case 'string': 
+                    config.router.loadTemplateRoute(val, key, parsedKey);
+                    break;
+                  case 'object':
+                    if(Array.isArray(val)) {
+                      const [name, data]: [string, any] = val;
+                      const route = config.router.loadTemplateRoute(name, key, parsedKey);
+                      const data_page = await addDataFuncs(data);
+                      if(route) await this.#addData({
+                        ...data_page,
+                        [key.slice(1)]: name.startsWith('/') ? name.slice(1) : name,
+                      }, join(parsedKey, name));
+                    }else {
+                      const { name, data } = val;
+                      const route = config.router.loadTemplateRoute(name, key, parsedKey);
+                      const data_page = await addDataFuncs(data);
+                      if(route) await this.#addData({
+                        ...data_page,
+                        [key.slice(1)]: name.startsWith('/') ? name.slice(1) : name,
+                      }, join(parsedKey, name));
+                    }
+                    break;
+                }
+                if(index_page_dinamyc === pageDinamyc.length - 1) return res();
+                index_page_dinamyc++;
+              })
+            }else {
+              Object.entries(pageDinamyc).forEach(async (
+                [name, data]
+              ) => {
+                const route = config.router.loadTemplateRoute(name, key, parsedKey);
+                if(data) {
+                  const data_page = await addDataFuncs(data);
+                  if(route) await this.#addData({
+                    ...data_page,
+                    [key.slice(1)]: name.startsWith('/') ? name.slice(1) : name,
+                  }, join(parsedKey, name));
+                }
+                if(index_page_dinamyc === pageDinamyc.length - 1) return res();
+                index_page_dinamyc++;
+              })
+            }
+          })
+          await pageDinamycPromise;
+        }else {
+          subValue = await addDataFuncs(value);
+          if(key.startsWith('/')) {
+            const subParsedKey: string = Router.createUrl(join(parsedKey, key.slice(1)));
+            await this.#addData(Object.assign(objectFiltered, subValue), subParsedKey);
+          };
+        }
+        
         if(keys.length - 1 === index) {
           this.data.set(parsedKey, objectFiltered);
           return res();
@@ -111,11 +153,29 @@ export default class Data {
     })
   };
 
+  waitingReady =  new Set<any[]>();
+
+  onReady = () => {
+    config.events.on('ready', () => {
+      this.waitingReady.forEach((messages: any[]) => console.log(...messages))
+    })
+  }
+
+  logConfigData = (logs: Set<any[]>) => {
+    if(!logs) return;
+    if(config.ready) {
+      logs.forEach(log => console.log(...log));
+      return;
+    }
+    logs.forEach(log => this.waitingReady.add(log));
+    if(init) this.onReady();
+  };
 
   protected stringToJsAndAddData = (content: string): Promise<void> => {
     this.content = content;
     const contentParsed = requireFromString(content);
-    const urls: string[] = Object.keys(contentParsed);
+    const urls: string[] = Object.keys(contentParsed).filter(key => key !== '__sv__log__');
+    this.logConfigData(contentParsed['__sv__log__']);
     return new Promise(res => {
       let index: number = 0;
       urls.forEach(async (url: string) => {
@@ -136,21 +196,28 @@ export default class Data {
           entryPoints: [chunk.toString()],
           write: false,
           bundle: true,
+          inject: [resolve(__dirname, './bind_console.js')],
           format: 'cjs',
           platform: 'node',
           watch: config.type === 'dev' && {
             onRebuild: (error, { 
-              outputFiles 
+              outputFiles,
             }) => {
               if(error) {
                 handleError(error, 'data');
+                return;
               }
+              logger.logString`{hex('#6AFF4B') {italic Reload config.data.js}}`;
               const [result] = outputFiles;
               this.stringToJsAndAddData(result.text)
               .then(() => {
                 this.sv().reload(null, htmlInjector.name, {})
                 cb()
-              });
+              })
+              .catch((err: Error) => {
+                handleError(err, 'data');
+                cb()
+              })
             },
           },
           logLevel: 'silent',
@@ -163,6 +230,7 @@ export default class Data {
         )
         .then(() => {
           init = false;
+          // console.log(this.)
           cb();
         })
         .catch(err => {
@@ -182,12 +250,14 @@ export default class Data {
     });
     const spinnerInstance = spinner();
     spinnerInstance.text = 'Loading data -- config.data.js';
-    pathConfigStream.pipe(this.WritablePathConfigStream()).on('finish', () => {
-      spinnerInstance.text = 'Data upload finished';
-      if(config.type === 'dev') {
-        spinnerInstance.text = 'Testing internet...';
-      }
-      this.callback();
-    });
+    pathConfigStream
+      .pipe(this.WritablePathConfigStream())
+      .on('finish', () => {
+        spinnerInstance.text = 'Data upload finished';
+        if(config.type === 'dev') {
+          spinnerInstance.text = 'Testing internet...';
+        }
+        this.callback();
+      });
   }
 }
