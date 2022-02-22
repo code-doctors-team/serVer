@@ -212,13 +212,15 @@ exports.posts = {
 ```
 
 In files
-📦src
-┣ 📂pages
-┃ ┣ 📂dashboard
-┃ ┃ ┗ 📜settings.ejs
-┃ ┣ 📂posts
-┃ ┃ ┗ 📜[post].ejs
-┃ ┣ 📜index.ejs
+```
+  📦src
+    ┣ 📂pages
+    ┃ ┣ 📂dashboard
+    ┃ ┃ ┗ 📜settings.ejs
+    ┃ ┣ 📂posts
+    ┃ ┃ ┗ 📜[post].ejs
+    ┃ ┣ 📜index.ejs
+```
 
 ## How to build my project for production?
 
