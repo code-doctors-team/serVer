@@ -10,9 +10,9 @@
 
 - [How get?][1]
 - [Sv-cli][2]
-  - [¿How use sv-cli?][3]
-  - [¿How use sv-cli in mode dev?][4]
-  - [¿How use plugins in sv-cli?][5]
+  - [How use sv-cli?][3]
+  - [How use sv-cli in mode dev?][4]
+  - [How use plugins in sv-cli?][5]
 - [Concepts basics][6]
   - [Structure your directorys][7]
   - [Routes][8]
@@ -33,7 +33,7 @@ Run:
 
 Use serVer cli.
 
-### ¿How use sv-cli?
+### How use sv-cli?
 
 ```sh
 $ sv help
@@ -50,7 +50,7 @@ Commands:
   help [command]   display help for command
 ```
 
-### ¿How use sv-cli in mode dev?
+### How use sv-cli in mode dev?
 
 In dev(development) mode, it comes by default, these are the commands in this mode.
 
@@ -264,9 +264,9 @@ You can change the port with flag `--port` and change your directory build with 
 
 [1]: #how-get
 [2]: #sv-cli
-[3]: #¿how-use-sv-cli
-[4]: #¿how-use-sv-cli-in-mode-dev
-[5]: #¿how-use-plugins-in-sv-cli
+[3]: #how-use-sv-cli
+[4]: #how-use-sv-cli-in-mode-dev
+[5]: #how-use-plugins-in-sv-cli
 [6]: #concepts-basics
 [7]: #structure-your-directorys
 [8]: #routes
