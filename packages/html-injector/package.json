@@ -1,6 +1,6 @@
 {
   "name": "@sv-cd/html-injector",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "HTML Plugin for @sv-cd/core (INJECT-HTML)",
   "main": "build/index.js",
   "scripts": {

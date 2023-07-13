@@ -1,6 +1,6 @@
 {
   "name": "@sv-cd/server-reload",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Use @sv-cd/server of server and add features. Used in @sv-cd/core",
   "main": "build/index.js",
   "scripts": {

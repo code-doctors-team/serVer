@@ -1,6 +1,6 @@
 {
   "name": "@sv-cd/core",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "This a sv's core. Sv is a group of plugins and utilities that you help when work in a proyect of frontend. Loads your data before the build and compiles your code(javascript, css, .ejs(template)). Using Static site generation concepts, and others strategies.",
   "bin": {
     "sv": "build/src/index.js"
