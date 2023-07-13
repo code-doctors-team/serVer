@@ -1,0 +1,126 @@
+diff --git a/node_modules/open/index.d.ts b/node_modules/open/index.d.ts
+old mode 100644
+new mode 100755
+index 9c8f2a3..bde1fc3
+--- a/node_modules/open/index.d.ts
++++ b/node_modules/open/index.d.ts
+@@ -1,4 +1,5 @@
+ import {ChildProcess} from 'child_process';
++// import { Writable } from 'stream';
+ 
+ declare namespace open {
+ 	interface Options {
+@@ -107,7 +108,12 @@ declare const open: {
+ 	(
+ 		target: string,
+ 		options?: open.Options
+-	): Promise<ChildProcess>;
++	): Promise<ChildProcess & {
++		app?: {
++			name: string,
++			arguments: string[]
++		},
++	}>;
+ 
+ 	/**
+ 	An object containing auto-detected binary names for common apps. Useful to work around cross-platform differences.
+@@ -147,7 +153,12 @@ declare const open: {
+ 	await openApp('xcode');
+ 	```
+ 	*/
+-	openApp: (name: open.App['name'], options?: open.OpenAppOptions) => Promise<ChildProcess>;
++	openApp: (name: open.App['name'], options?: open.OpenAppOptions) => Promise<ChildProcess & {
++		app?: {
++			name: string,
++			arguments: string[]
++		},
++	}>;
+ };
+ 
+ export = open;
+diff --git a/node_modules/open/index.js b/node_modules/open/index.js
+old mode 100644
+new mode 100755
+index 290b4ec..06ad598
+--- a/node_modules/open/index.js
++++ b/node_modules/open/index.js
+@@ -4,6 +4,7 @@ const {promises: fs, constants: fsConstants} = require('fs');
+ const isWsl = require('is-wsl');
+ const isDocker = require('is-docker');
+ const defineLazyProperty = require('define-lazy-prop');
++const { Writable } = require('stream');
+ 
+ // Path to included `xdg-open`.
+ const localXdgOpenPath = path.join(__dirname, 'xdg-open');
+@@ -100,7 +101,8 @@ const baseOpen = async options => {
+ 
+ 	let command;
+ 	const cliArguments = [];
+-	const childProcessOptions = {};
++	const childProcessOptions = {
++	};
+ 
+ 	if (platform === 'darwin') {
+ 		command = 'open';
+@@ -141,9 +143,6 @@ const baseOpen = async options => {
+ 
+ 		const encodedArguments = ['Start'];
+ 
+-		if (options.wait) {
+-			encodedArguments.push('-Wait');
+-		}
+ 
+ 		if (app) {
+ 			// Double quote with double quotes to ensure the inner quotes are passed through.
+@@ -163,6 +162,7 @@ const baseOpen = async options => {
+ 
+ 		// Using Base64-encoded command, accepted by PowerShell, to allow special characters.
+ 		options.target = Buffer.from(encodedArguments.join(' '), 'utf16le').toString('base64');
++
+ 	} else {
+ 		if (app) {
+ 			command = app;
+@@ -204,8 +204,16 @@ const baseOpen = async options => {
+ 
+ 	const subprocess = childProcess.spawn(command, cliArguments, childProcessOptions);
+ 
++	let index = 0;
+ 	if (options.wait) {
+ 		return new Promise((resolve, reject) => {
++			subprocess.stderr.on('data', (data) => {
++				if(index && data.toString().includes('error')) {
++					reject(Error('Not found browser'))
++				};
++				index++;
++			})
++			
+ 			subprocess.once('error', reject);
+ 
+ 			subprocess.once('close', exitCode => {
+@@ -214,14 +222,18 @@ const baseOpen = async options => {
+ 					return;
+ 				}
+ 
+-				resolve(subprocess);
++				resolve(Object.assign(subprocess, {
++					app: options.app,
++				}));
+ 			});
+ 		});
+ 	}
+ 
+ 	subprocess.unref();
+ 
+-	return subprocess;
++	return Object.assign(subprocess, {
++		app: options.app,
++	});
+ };
+ 
+ const open = (target, options) => {
+diff --git a/node_modules/open/license b/node_modules/open/license
+old mode 100644
+new mode 100755
+diff --git a/node_modules/open/readme.md b/node_modules/open/readme.md
+old mode 100644
+new mode 100755
