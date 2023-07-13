@@ -1,5 +1,5 @@
-import parse from 'node-html-parser';
-import workLoopAsync from './workLoopAsync';
+import parse from "node-html-parser";
+import workLoopAsync from "./workLoopAsync";
 
 export const nextUnitOfWork = {
   value: null,
@@ -8,7 +8,12 @@ export const wipRoot = {
   value: null,
 };
 
-export default function createDomAndProcess(stringDom, type, alternateRoot, cb) {
+export default function createDomAndProcess(
+  stringDom,
+  type,
+  alternateRoot,
+  cb
+) {
   const dom = parse(stringDom);
 
   wipRoot.value = {
@@ -21,5 +26,5 @@ export default function createDomAndProcess(stringDom, type, alternateRoot, cb) 
     },
   };
   nextUnitOfWork.value = wipRoot.value;
-  workLoopAsync(type, cb)
+  workLoopAsync(type, cb);
 }

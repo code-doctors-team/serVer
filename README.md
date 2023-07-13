@@ -90,9 +90,10 @@ Use a structure similar to this.
       ┃ ┗ 📜header.ejs
       ┣ 📂styles
       ┃ ┣ 📜styles.css
-      ┣ 📂js
+      ┣ 📂scripts
       ┃ ┣ 📜index.js
-      ┣ 📂pages
+
+      📦pages
       ┃ ┣ 📂dashboard
       ┃ ┃ ┗ 📜settings.ejs
       ┃ ┣ 📜index.ejs

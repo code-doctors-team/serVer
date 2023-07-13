@@ -4,8 +4,8 @@
   "description": "HTML Plugin for @sv-cd/core (INJECT-HTML)",
   "main": "build/index.js",
   "scripts": {
-    "build": "esbuild ./src/index.js  --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify && npm run build:clients",
-    "build:clients": "esbuild ./src/clients/index.js --outfile=build/clients.js --bundle --target=chrome58,firefox57,safari11 --minify --define:process.env.DEV=false --keep-names",
+    "build": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --minify && npm run build:clients",
+    "build:clients": "esbuild ./src/clients/index.js  ./src/clients/script.js --outdir=build/clients --outbase=src/clients --bundle --target=chrome58,firefox57,safari11 --minify --define:process.env.DEV=false --keep-names",
     "dev": "esbuild ./src/index.js --outfile=build/index.js --target=node12.0.1 --bundle --platform=node --watch",
     "prepublishOnly": "npm run build"
   },

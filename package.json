@@ -10,7 +10,8 @@
     "tsc:dev": "tsc -w",
     "tsc:build": "tsc",
     "postinstall": "patch-package",
-    "prepublishOnly": "npm run tsc:build"
+    "prepublishOnly": "npm run tsc:build",
+    "start": "node build/src/index.js"
   },
   "workspaces": [
     "./packages/*"

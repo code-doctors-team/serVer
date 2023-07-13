@@ -1,52 +1,63 @@
-import { wipRoot } from './createDomAndProcess';
-import { NoAction, Deletion, Placement } from './actionsType';
-import { dispatch, createParentsArray, commitDeletion } from './actions';
-import { nanoid } from 'nanoid';
+import { wipRoot } from "./createDomAndProcess";
+import { NoAction, Deletion, Placement } from "./actionsType";
+import { dispatch, createParentsArray, commitDeletion } from "./actions";
+import { nanoid } from "nanoid";
 
 const commitWork = (fiber, prevFiber) => {
-  if(!fiber) return;
+  if (!fiber) return;
   const nextFiber = fiber.sibling;
-  if(fiber.action !== NoAction) {
-    if(fiber.parent.action === Deletion) return;
+  if (fiber.action !== NoAction) {
+    if (fiber.parent.action === Deletion) return;
     const dispatchReturn = { fiber };
-    if(fiber.action === Placement) {
+    if (fiber.action === Placement) {
       let isOnlyAppend = false;
       let isAfterEnd = false;
-      if(prevFiber?.action === NoAction || prevFiber?.action === Placement && prevFiber?.tag !== 'text') {
+      if (
+        prevFiber?.action === NoAction ||
+        (prevFiber?.action === Placement && prevFiber?.tag !== "text")
+      ) {
         isAfterEnd = true;
-      }else if(nextFiber?.action === Placement || (prevFiber?.action === NoAction && prevFiber?.tag === 'text')) {
+      } else if (
+        nextFiber?.action === Placement ||
+        (prevFiber?.action === NoAction && prevFiber?.tag === "text")
+      ) {
         isOnlyAppend = true;
       }
-      Reflect.set(dispatchReturn, 'effect', isOnlyAppend ? 'only-append' : (isAfterEnd ? 'after-end' : null))
-      if(isAfterEnd) {
-        Reflect.set(dispatchReturn, 'prevFiber', {
+      Reflect.set(
+        dispatchReturn,
+        "effect",
+        isOnlyAppend ? "only-append" : isAfterEnd ? "after-end" : null
+      );
+      if (isAfterEnd) {
+        Reflect.set(dispatchReturn, "prevFiber", {
           ...prevFiber,
-          prevFiber: true
-        })
+          prevFiber: true,
+        });
       }
     }
-    if(fiber.action !== Deletion && fiber.tag !== 'text') {
-      Reflect.set(fiber, 'uiid', nanoid());
+    if (fiber.action !== Deletion && fiber.tag !== "text") {
+      Reflect.set(fiber, "uiid", nanoid());
     }
     const parentsFiber = createParentsArray(fiber);
-    Reflect.set(dispatchReturn, 'parents', parentsFiber)
-    dispatch(dispatchReturn, fiber.action.description)
+    Reflect.set(dispatchReturn, "parents", parentsFiber);
+    dispatch(dispatchReturn, fiber.action.description);
   }
-  if(fiber.action !== Deletion) {
+  if (fiber.action !== Deletion) {
     commitWork(fiber.child);
     commitWork(nextFiber, fiber);
   }
 };
 
 export default function commitRoot(effect, cb) {
-  if(effect === 'connection') {
+  if (effect === "connection") {
     cb(wipRoot.value);
-    return Reflect.set(wipRoot, 'value', null);
+    return Reflect.set(wipRoot, "value", null);
   }
-  commitDeletion(deletion => {
+  commitDeletion((deletion) => {
     deletion.forEach(commitWork);
   });
   commitWork(wipRoot.value.child);
+  if (effect !== "check") dispatch({ finish: true }, "finish");
   cb(wipRoot.value);
-  Reflect.set(wipRoot, 'value', null);
+  Reflect.set(wipRoot, "value", null);
 }

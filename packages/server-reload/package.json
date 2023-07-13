@@ -21,7 +21,7 @@
     "ws": "^8.4.2"
   },
   "devDependencies": {
-    "esbuild": "^0.11.20"
+    "esbuild": "^0.18.11"
   },
   "publishConfig": {
     "access": "public"
